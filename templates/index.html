@@ -4,75 +4,106 @@
     <meta charset="UTF-8">
     <title>Tool tách 2 trường dữ liệu trong file excel</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f6f8fa;
+        /* Reset CSS */
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #9face6);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
         }
 
         .container {
-            max-width: 600px;
-            margin: 60px auto;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
         }
 
         h2 {
-            text-align: center;
-            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #4a4a4a;
         }
 
         form {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
 
         input[type="file"],
         input[type="email"] {
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="file"]:focus,
+        input[type="email"]:focus {
+            border-color: #007bff;
         }
 
         button {
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
-            background-color: #0066cc;
-            color: white;
+            background: #007bff;
+            color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: #0052a3;
+            background: #0056b3;
         }
 
         .status {
             margin-top: 20px;
-            color: #006600;
+            color: #28a745;
             font-weight: bold;
-            text-align: center;
         }
 
         .downloads {
             margin-top: 30px;
+            text-align: left;
         }
 
         .downloads h3 {
+            font-size: 18px;
             margin-bottom: 10px;
+            color: #333;
         }
 
         .downloads ul {
-            padding-left: 20px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .downloads li {
+            margin-bottom: 8px;
         }
 
         .downloads a {
             text-decoration: none;
-            color: #0077cc;
+            color: #007bff;
+            font-weight: 500;
         }
 
         .downloads a:hover {
@@ -80,15 +111,34 @@
         }
 
         .download-all {
-            display: block;
-            margin-top: 10px;
-            text-align: center;
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: #fff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-all:hover {
+            background: #218838;
+        }
+
+        a button {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        a button:hover {
+            background: #5a6268;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Upload Excel File</h2>
+        <h2>Tool tách 2 trường dữ liệu trong file excel</h2>
         <form method="POST" enctype="multipart/form-data">
             <input type="file" name="file" required />
             <input type="email" name="email" placeholder="Nhập email" />
