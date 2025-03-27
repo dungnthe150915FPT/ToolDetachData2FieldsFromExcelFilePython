@@ -7,21 +7,21 @@ from collections import defaultdict
 from openpyxl import load_workbook, Workbook
 from werkzeug.utils import secure_filename
 from email.message import EmailMessage
-from dotenv import load_dotenv
+import pandas as pd  # Thêm pandas để xử lý Excel nhanh hơn
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['DOWNLOAD_FOLDER'] = 'static/downloads'
 
-load_dotenv()  # Load biến môi trường email
-
+# Tạo thư mục nếu chưa có
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['DOWNLOAD_FOLDER'], exist_ok=True)
 
 
 def sanitize_filename(name):
     """Loại bỏ ký tự không hợp lệ, giữ lại tiếng Việt và khoảng trắng"""
-    name = name.replace('_', ' ')  # Nếu org chứa dấu gạch dưới, đổi thành dấu cách
+    name = str(name)  # Đảm bảo dữ liệu là chuỗi
+    name = name.replace('_', ' ')  # Nếu có dấu gạch dưới, đổi thành dấu cách
     return re.sub(r'[\\/*?:"<>|]', '', name).strip()
 
 
@@ -32,7 +32,9 @@ def index():
 
     if request.method == 'POST':
         uploaded_file = request.files.get('file')
-        email = request.form.get('email')
+        recipient_email = request.form.get('email')
+        sender_email = request.form.get('sender_email')
+        sender_password = request.form.get('sender_password')
 
         if not uploaded_file or uploaded_file.filename == '':
             status = "Không có file được tải lên."
@@ -42,16 +44,25 @@ def index():
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         uploaded_file.save(file_path)
 
-        wb = load_workbook(file_path)
-        ws = wb.active
+        # Đọc file Excel
+        try:
+            df = pd.read_excel(file_path, dtype=str)  # Đọc file, mọi dữ liệu là chuỗi
+        except Exception as e:
+            status = f"Lỗi khi đọc file Excel: {e}"
+            return render_template('index.html', status=status)
+
+        # Tạo dictionary để lưu dữ liệu theo nhóm tổ chức
         data = defaultdict(list)
 
-        for row in ws.iter_rows(min_row=2, values_only=True):
-            username, org = row[:2]
-            if username and org:
-                data[org].append((username, org))
+        for _, row in df.iterrows():
+            org = str(row.get('ORG_CODE_NAME_BDT', '')).strip()
+            user = str(row.get('USERNAME', '')).strip()
+            if org and user:  # Bỏ qua dòng trống
+                data[org].append([user, org])
 
+        # Đường dẫn file zip chứa tất cả file Excel đã tách
         zip_filename = os.path.join(app.config['DOWNLOAD_FOLDER'], 'all_groups.zip')
+
         with zipfile.ZipFile(zip_filename, 'w') as zipf:
             for org, users in data.items():
                 safe_org = sanitize_filename(org)
@@ -68,23 +79,28 @@ def index():
                 zipf.write(out_path, arcname=out_filename)
                 download_links.append(f"downloads/{out_filename}")
 
-        # Gửi email nếu có
-        if email:
+        # **Gửi email bằng tài khoản của người dùng**
+        if recipient_email and sender_email and sender_password:
             try:
                 msg = EmailMessage()
                 msg['Subject'] = "Tách file hoàn tất"
-                msg['From'] = os.getenv("EMAIL_USER")
-                msg['To'] = email
+                msg['From'] = sender_email
+                msg['To'] = recipient_email
                 msg.set_content("Đã xử lý và đính kèm file.")
 
                 with open(zip_filename, 'rb') as f:
                     msg.add_attachment(f.read(), maintype='application', subtype='zip', filename='all_groups.zip')
 
-                with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                    smtp.login(os.getenv("EMAIL_USER"), os.getenv("EMAIL_PASS"))
+                # **Kết nối SMTP của công ty**
+                smtp_server = "mail.vnpost.vn"
+                smtp_port = 587
+
+                with smtplib.SMTP(smtp_server, smtp_port) as smtp:
+                    smtp.starttls()  # Bật bảo mật TLS
+                    smtp.login(sender_email, sender_password)
                     smtp.send_message(msg)
 
-                status = f"✅ Đã gửi file tới {email}"
+                status = f"✅ Đã gửi file tới {recipient_email}"
             except Exception as e:
                 status = f"❌ Lỗi gửi email: {e}"
 

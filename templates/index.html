@@ -53,6 +53,14 @@
             outline: none;
             transition: border-color 0.3s ease;
         }
+        input[type="password"] {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
 
         input[type="file"]:focus,
         input[type="email"]:focus {
@@ -139,15 +147,25 @@
 <body>
     <div class="container">
         <h2>Tool tách 2 trường dữ liệu trong file excel</h2>
-        <form method="POST" enctype="multipart/form-data">
+        <!-- <form method="POST" enctype="multipart/form-data">
             <input type="file" name="file" required />
             <input type="email" name="email" placeholder="Nhập email" />
             <button type="submit">Upload & Process</button>
             <a href="/" style="text-align: center;">
                 <button type="button">🔄 Làm mới</button>
             </a>
+        </form> -->
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" required />
+            <input type="email" name="email" placeholder="Nhập email nhận file" required />
+            <input type="email" name="sender_email" placeholder="Nhập email gửi" required />
+            <input type="password" name="sender_password" placeholder="Nhập mật khẩu email gửi" required />
+            <button type="submit">Upload & Process</button>
+            <a href="/" style="text-align: center;">
+                <button type="button">🔄 Làm mới</button>
+            </a>
         </form>
-
+        
         {% if status %}
             <p class="status">{{ status }}</p>
         {% endif %}
