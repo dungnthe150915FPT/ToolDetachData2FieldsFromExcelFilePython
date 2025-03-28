@@ -3,3 +3,5 @@ openpyxl
 pandas
 python-dotenv
 gunicorn
+autopep8
+pylint
