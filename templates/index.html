@@ -3,100 +3,68 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Tool tách dữ liệu Excel & Gửi Email</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-            width: 400px;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        input,
-        textarea,
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        button {
-            background: #007bff;
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #0056b3;
-        }
-
-        .status {
-            color: green;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 15px;
-        }
-
-        .downloads {
-            margin-top: 20px;
-        }
-
-        .downloads a {
-            display: block;
-            margin-bottom: 5px;
-            color: #007bff;
-            text-decoration: none;
-        }
-    </style>
+    <title>Tool Tách Dữ Liệu & Gửi Email</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <div class="container">
-        <h2>Tool hỗ trợ phân tách dữ liệu và truyền thống</h2>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" required />
-            <input type="email" name="sender_email" placeholder="Email gửi" required />
-            <input type="password" name="sender_password" placeholder="Mật khẩu email" required />
-            <input type="text" name="email_subject" placeholder="Tiêu đề email" required
-                value="DANH SÁCH TÀI KHOẢN ĐANG ĐỂ PASSWORD MẶC ĐỊNH" />
-            <textarea name="email_body" placeholder="Nội dung email" rows="9" cols="70"
-                required></textarea>
-            <button type="submit">Tải lên & Xử lý</button>
-            <a href="/" style="text-align: center;">
-                <button type="button">🔄 Làm mới</button>
-            </a>
-        </form>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-3xl">
+        <h2 class="text-2xl font-bold text-center mb-6">📬 Tool Hỗ Trợ Phân Tách Dữ Liệu & Gửi Email</h2>
 
         {% if status %}
-        <p class="status">{{ status }}</p>
+        <div class="p-4 mb-4 text-sm {{ 'text-green-800 bg-green-100' if '✅' in status else 'text-red-800 bg-red-100' }} rounded-lg">
+            {{ status }}
+        </div>
         {% endif %}
 
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            <input type="file" name="file" required class="border rounded w-full p-2">
+            <input type="email" name="sender_email" placeholder="Email gửi" required class="border rounded w-full p-2">
+            <input type="password" name="sender_password" placeholder="Mật khẩu" required class="border rounded w-full p-2">
+            <input type="text" name="email_subject" value="DANH SÁCH TÀI KHOẢN ĐANG ĐỂ PASSWORD MẶC ĐỊNH {unit}" class="border rounded w-full p-2">
+            <textarea name="email_body" rows="5" class="border rounded w-full p-2">Kính gửi đơn vị {unit},
+
+ Em gửi danh sách các tài khoản đang để password mặc định của đơn vị ngày 14/05/2025. Nhờ a/c đôn đốc xử lý thay đổi mật khẩu giúp em ạ.
+
+Trân trọng!</textarea>
+
+            <h3 class="text-lg font-semibold mt-6">📑 Danh sách mail từng đơn vị</h3>
+            <div class="overflow-y-auto max-h-80 border rounded">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="p-2 text-left">Đơn vị</th>
+                            <th class="p-2 text-left">Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for org, email in email_mapping.items() %}
+                        <tr class="border-t">
+                            <td class="p-2">{{ org }}</td>
+                            <td class="p-2">
+                                <input type="text" name="email_{{ org }}" value="{{ email }}" class="border rounded w-full p-1 text-sm">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="bg-blue-600 text-white rounded-lg py-2 px-4 hover:bg-blue-700">📤 Xử lý & Gửi Mail</button>
+                <a href="/" class="bg-gray-300 text-gray-800 rounded-lg py-2 px-4 hover:bg-gray-400 inline-flex items-center">♻️ Làm Mới</a>
+            </div>
+        </form>
+
         {% if download_links %}
-        <div class="downloads">
-            <h3>File đã xử lý:</h3>
-            {% for link in download_links %}
-            <a href="{{ url_for('static', filename=link) }}" download>{{ link }}</a>
-            {% endfor %}
-            <a href="/download-all">📂 Tải tất cả (ZIP)</a>
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold">📄 File đã xử lý:</h3>
+            <ul class="list-disc ml-6 mt-2 text-sm">
+                {% for link in download_links %}
+                <li><a href="{{ url_for('static', filename=link) }}" download class="text-blue-600 hover:underline">{{ link }}</a></li>
+                {% endfor %}
+            </ul>
+            <a href="/download-all" class="mt-4 inline-block text-blue-600 hover:underline">📦 Tải ZIP tất cả</a>
         </div>
         {% endif %}
     </div>
